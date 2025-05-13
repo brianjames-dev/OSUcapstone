@@ -244,7 +244,7 @@ void PPU::getTile(uint8_t tileIndex, uint8_t* tileData, bool table1) {
     for (int i = 0; i < 8; i++) {
         tileData[i] = (patternTables[index + i] << 1) | (patternTables[index + i + 8] & 0x01); // Combine bit planes
     } */
-    
+
     // let's try again:
     for (int i = 0; i < 8; ++i) {
         // Get the low and high bit planes for this row

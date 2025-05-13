@@ -116,6 +116,8 @@ int main(int, char**)
     //IM_ASSERT(font != nullptr);
 
     // Our state
+    bool show_demo_window = true;
+    bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
@@ -154,199 +156,190 @@ int main(int, char**)
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        {
-            // Generate random color
-            if (nes.A_changed == true && nes.paused == false) {
-                R = rand() / (float)RAND_MAX;
-                G = rand() / (float)RAND_MAX;
-                B = rand() / (float)RAND_MAX;
-            }
+          // Render the NES screen
+          ImVec2 viewportSize = ImGui::GetMainViewport()->Size;
+          float menuBarHeight = ImGui::GetFrameHeight(); // Offset by menu bar height
+          ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight), ImGuiCond_Always);
+          ImGui::SetNextWindowSize(ImVec2(viewportSize.x, viewportSize.y - menuBarHeight), ImGuiCond_Always);
 
-            // Render the NES screen
-            ImVec2 viewportSize = ImGui::GetMainViewport()->Size;
-            float menuBarHeight = ImGui::GetFrameHeight(); // Offset by menu bar height
-            ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight), ImGuiCond_Always);
-            ImGui::SetNextWindowSize(ImVec2(viewportSize.x, viewportSize.y - menuBarHeight), ImGuiCond_Always);
+          ImGui::Begin("NES Screen", nullptr,
+              ImGuiWindowFlags_NoTitleBar |
+              ImGuiWindowFlags_NoResize |
+              ImGuiWindowFlags_NoMove |
+              ImGuiWindowFlags_NoCollapse |
+              ImGuiWindowFlags_NoBringToFrontOnFocus
+          );
+          //ImGui::Begin("NES Emulator", nullptr, ImGuiWindowFlags_NoResize;		// don't allow resizing?
+          ImVec2 widgetSize = ImGui::GetContentRegionAvail();
 
-            ImGui::Begin("NES Screen", nullptr,
-                ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoCollapse |
-                ImGuiWindowFlags_NoBringToFrontOnFocus
-            );
-            //ImGui::Begin("NES Emulator", nullptr, ImGuiWindowFlags_NoResize;		// don't allow resizing?
-            ImVec2 widgetSize = ImGui::GetContentRegionAvail();
-
-            uint32_t* framebuffer = nes.getFramebuffer();
+          uint32_t* framebuffer = nes.getFramebuffer();
 
 
-            // Set the width and height of the NES screen
-            int screenWidth = 256;  // NES screen width
-            int screenHeight = 240; // NES screen height
+          // Set the width and height of the NES screen
+          int screenWidth = 256;  // NES screen width
+          int screenHeight = 240; // NES screen height
 
-            // Calculate the scaling factor based on the widget size
-            float aspectRatio = static_cast<float>(screenWidth) / screenHeight;
-            float widgetAspectRatio = widgetSize.x / widgetSize.y;
+          // Calculate the scaling factor based on the widget size
+          float aspectRatio = static_cast<float>(screenWidth) / screenHeight;
+          float widgetAspectRatio = widgetSize.x / widgetSize.y;
 
-            float renderWidth = widgetSize.x;
-            float renderHeight = widgetSize.y;
+          float renderWidth = widgetSize.x;
+          float renderHeight = widgetSize.y;
 
-            // If the widget aspect ratio is greater than the NES aspect ratio, scale by height
-            if (widgetAspectRatio > aspectRatio) {
-                renderWidth = widgetSize.y * aspectRatio;
-            } else { // Otherwise, scale by width
-                renderHeight = widgetSize.x / aspectRatio;
-            }
+          // If the widget aspect ratio is greater than the NES aspect ratio, scale by height
+          if (widgetAspectRatio > aspectRatio) {
+              renderWidth = widgetSize.y * aspectRatio;
+          } else { // Otherwise, scale by width
+              renderHeight = widgetSize.x / aspectRatio;
+          }
 
-            //ImGui::SetWindowSize(ImVec2(renderWidth, renderHeight), 0);
+          //ImGui::SetWindowSize(ImVec2(renderWidth, renderHeight), 0);
 
-            const Uint8 *keyboard;
+          const Uint8 *keyboard;
 
-            SDL_PumpEvents();
-            keyboard = SDL_GetKeyboardState(NULL);
-            // Handle the Return key
-            if (keyboard[SDL_SCANCODE_RETURN]) {
-                nes.bus.controller1.start = 1;
-            } else {
-                nes.bus.controller1.start = 0;
-            }
+          SDL_PumpEvents();
+          keyboard = SDL_GetKeyboardState(NULL);
+          // Handle the Return key
+          if (keyboard[SDL_SCANCODE_RETURN]) {
+              nes.bus.controller1.start = 1;
+          } else {
+              nes.bus.controller1.start = 0;
+          }
 
-            // Handle the Up arrow key
-            if (keyboard[SDL_SCANCODE_W]) {
-                nes.bus.controller1.up = 1;
-            } else {
-                nes.bus.controller1.up = 0;
-            }
+          // Handle the Up arrow key
+          if (keyboard[SDL_SCANCODE_W]) {
+              nes.bus.controller1.up = 1;
+          } else {
+              nes.bus.controller1.up = 0;
+          }
 
-            // Handle the Down arrow key
-            if (keyboard[SDL_SCANCODE_S]) {
-                nes.bus.controller1.down = 1;
-            } else {
-                nes.bus.controller1.down = 0;
-            }
+          // Handle the Down arrow key
+          if (keyboard[SDL_SCANCODE_S]) {
+              nes.bus.controller1.down = 1;
+          } else {
+              nes.bus.controller1.down = 0;
+          }
 
-            // Handle the Left arrow key
-            if (keyboard[SDL_SCANCODE_A]) {
-                nes.bus.controller1.left = 1;
-            } else {
-                nes.bus.controller1.left = 0;
-            }
+          // Handle the Left arrow key
+          if (keyboard[SDL_SCANCODE_A]) {
+              nes.bus.controller1.left = 1;
+          } else {
+              nes.bus.controller1.left = 0;
+          }
 
-            // Handle the Right arrow key
-            if (keyboard[SDL_SCANCODE_D]) {
-                nes.bus.controller1.right = 1;
-            } else {
-                nes.bus.controller1.right = 0;
-            }
+          // Handle the Right arrow key
+          if (keyboard[SDL_SCANCODE_D]) {
+              nes.bus.controller1.right = 1;
+          } else {
+              nes.bus.controller1.right = 0;
+          }
 
-            // Handle the Control key
-            if (keyboard[SDL_SCANCODE_LCTRL]) {
-                nes.bus.controller1.select = 1;
-            } else {
-                nes.bus.controller1.select = 0;
-            }
+          // Handle the Control key
+          if (keyboard[SDL_SCANCODE_LCTRL]) {
+              nes.bus.controller1.select = 1;
+          } else {
+              nes.bus.controller1.select = 0;
+          }
 
-            // Handle the X key
-            if (keyboard[SDL_SCANCODE_M]) {
-                nes.bus.controller1.a = 1;
-            } else {
-                nes.bus.controller1.a = 0;
-            }
+          // Handle the X key
+          if (keyboard[SDL_SCANCODE_M]) {
+              nes.bus.controller1.a = 1;
+          } else {
+              nes.bus.controller1.a = 0;
+          }
 
-            // Handle the Z key
-            if (keyboard[SDL_SCANCODE_N]) {
-                nes.bus.controller1.b = 1;
-            } else {
-                nes.bus.controller1.b = 0;
-            }
+          // Handle the Z key
+          if (keyboard[SDL_SCANCODE_N]) {
+              nes.bus.controller1.b = 1;
+          } else {
+              nes.bus.controller1.b = 0;
+          }
 
-            GLuint textureID;
+          GLuint textureID;
 
-            // Create/OpenGL texture if not already created
-            if (textureID == 0) {
-                glGenTextures(1, &textureID);
-                glBindTexture(GL_TEXTURE_2D, textureID);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            }
+          // Create/OpenGL texture if not already created
+          if (textureID == 0) {
+              glGenTextures(1, &textureID);
+              glBindTexture(GL_TEXTURE_2D, textureID);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+          }
 
-            // Upload the framebuffer data to the texture
-            glBindTexture(GL_TEXTURE_2D, textureID);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer);
+          // Upload the framebuffer data to the texture
+          glBindTexture(GL_TEXTURE_2D, textureID);
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer);
 
-            // Render the texture with Image()
-            ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void *>(static_cast<intptr_t>(textureID))), ImVec2(renderWidth, renderHeight)); // Render the texture with the NES screen size
-            ImGui::End();
+          // Render the texture with Image()
+          ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void *>(static_cast<intptr_t>(textureID))), ImVec2(renderWidth, renderHeight)); // Render the texture with the NES screen size
+          ImGui::End();
 
-            // Display settings buttons
-            ImGui::BeginMainMenuBar();
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Load ROM")) {
-                    nes.on = false;
-                    auto selection = pfd::open_file("NES files", std::filesystem::current_path(), {"NES Files", "*.nes"}).result();
-                    if (!selection.empty()) {
-                        nes.load_rom(selection[0].c_str());
-                    }
-                    nes.initNES();
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Debug")) {
-                ImGui::MenuItem("Show Debug Window", nullptr, &showDebug);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
+          // Display settings buttons
+          ImGui::BeginMainMenuBar();
+          if (ImGui::BeginMenu("File")) {
+              if (ImGui::MenuItem("Load ROM")) {
+                  nes.on = false;
+                  auto selection = pfd::open_file("NES files", std::filesystem::current_path().string(), {"NES Files", "*.nes"}).result();
+                  if (!selection.empty()) {
+                      nes.load_rom(selection[0].c_str());
+                  }
+                  nes.initNES();
+              }
+              ImGui::EndMenu();
+          }
+          if (ImGui::BeginMenu("Debug")) {
+              ImGui::MenuItem("Show Debug Window", nullptr, &showDebug);
+              ImGui::EndMenu();
+          }
+          ImGui::EndMainMenuBar();
 
-            // Display the current registers, controller input, and additional controls
-            if (showDebug) {
-                ImGui::Begin("Debug");
-                // Pause button
-                if (ImGui::Button("PAUSE")) {
-                    nes.end();
-                    nes.paused = true;
-                }
+          // Display the current registers, controller input, and additional controls
+          if (showDebug) {
+              ImGui::Begin("Debug");
+              // Pause button
+              if (ImGui::Button("PAUSE")) {
+                  nes.end();
+                  nes.paused = true;
+              }
 
-                // Continue button
-                ImGui::SameLine();
-                if (ImGui::Button("CONTINUE")) {
-                    nes.paused = false;
-                    nes.on = true;
-                }
+              // Continue button
+              ImGui::SameLine();
+              if (ImGui::Button("CONTINUE")) {
+                  nes.paused = false;
+                  nes.on = true;
+              }
 
-                // Cycle button
-                ImGui::SameLine();
-                if (ImGui::Button("CYCLE")) {
-                    if (nes.on == false) {
-                        nes.on = true;
-                        nes.cycle();
-                        //nes.RandomizeFramebuffer();
-                        // if (nes.A_changed == true) {
-                        //     R = rand() / (float)RAND_MAX;
-                        //     G = rand() / (float)RAND_MAX;
-                        //     B = rand() / (float)RAND_MAX;
-                        // }
-                        nes.on = false;
-                    }
-                }
+              // Cycle button
+              ImGui::SameLine();
+              if (ImGui::Button("CYCLE")) {
+                  if (nes.on == false) {
+                      nes.on = true;
+                      nes.cycle();
+                      //nes.RandomizeFramebuffer();
+                      // if (nes.A_changed == true) {
+                      //     R = rand() / (float)RAND_MAX;
+                      //     G = rand() / (float)RAND_MAX;
+                      //     B = rand() / (float)RAND_MAX;
+                      // }
+                      nes.on = false;
+                  }
+              }
 
-                // Display registers and buttons
-                ImGui::Text("Registers      Buttons");
-                //ImGui::TextColored(ImVec4(R, G, B, 1.0f), "A: [%02x]", nes.cpu.A);
-                ImGui::Text("A:    [%02x]     A:      [%01x]", nes.cpu.A, nes.bus.controller1.a);
-                ImGui::Text("X:    [%02x]     B:      [%01x]", nes.cpu.X, nes.bus.controller1.b);
-                ImGui::Text("Y:    [%02x]     Select: [%01x]", nes.cpu.Y, nes.bus.controller1.select);
-                ImGui::Text("PC: [%04x]     Start:  [%01x]", nes.cpu.PC, nes.bus.controller1.start);
-                ImGui::Text("S:  [%04x]     Up:     [%01x]", nes.cpu.S, nes.bus.controller1.up);
-                ImGui::Text("P:  [%04x]     Down:   [%01x]", nes.cpu.P, nes.bus.controller1.down);
-                ImGui::Text("               Left:   [%01x]", nes.bus.controller1.left);
-                ImGui::Text("               Right:  [%01x]", nes.bus.controller1.right);
+              // Display registers and buttons
+              ImGui::Text("Registers      Buttons");
+              //ImGui::TextColored(ImVec4(R, G, B, 1.0f), "A: [%02x]", nes.cpu.A);
+              ImGui::Text("A:    [%02x]     A:      [%01x]", nes.cpu.A, nes.bus.controller1.a);
+              ImGui::Text("X:    [%02x]     B:      [%01x]", nes.cpu.X, nes.bus.controller1.b);
+              ImGui::Text("Y:    [%02x]     Select: [%01x]", nes.cpu.Y, nes.bus.controller1.select);
+              ImGui::Text("PC: [%04x]     Start:  [%01x]", nes.cpu.PC, nes.bus.controller1.start);
+              ImGui::Text("S:  [%04x]     Up:     [%01x]", nes.cpu.S, nes.bus.controller1.up);
+              ImGui::Text("P:  [%04x]     Down:   [%01x]", nes.cpu.P, nes.bus.controller1.down);
+              ImGui::Text("               Left:   [%01x]", nes.bus.controller1.left);
+              ImGui::Text("               Right:  [%01x]", nes.bus.controller1.right);
 
-                ImGui::End();
-            }
-        }
+              ImGui::End();
+          }
 
         // Cycle the NES
                 if (nes.on == true && nes.rom_loaded == true && nes.paused == false) {
@@ -380,3 +373,4 @@ int main(int, char**)
 
     return 0;
 }
+

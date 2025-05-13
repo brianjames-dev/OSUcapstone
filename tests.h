@@ -7,9 +7,11 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <string>
+
+#include "CPU.h"
 #include "NES.h"
 #include "Bus.h"
-#include <string>
 
 class Tests {
 public:

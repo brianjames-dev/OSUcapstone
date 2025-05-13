@@ -5,55 +5,47 @@ void NES::load_rom(const char *filename) {
     if (on == false) {
         rom.load(filename);
         rom_loaded = true;
-        uint16_t memory_address = 0x0000;
         bus.connectROM(rom);
 
-
-        // write CHR ROM to ppu memory
+        // Write CHR ROM to PPU pattern table memory
         for (int i = 0; i < 1024 * 8; i++) {
-            bus.ppu.writePatternTable(memory_address, rom.chrRom[memory_address]);
-            memory_address++;
+            bus.ppu.writePatternTable(i, rom.chrRom[i]);
         }
         bus.ppu.decodePatternTable();
-        memory_address = 0x0000;
 
-        // Write prg ROM to CPU Memory
-        // this section is specifically for NROM, changes will be necessary for future mappers
+        // Write PRG ROM to CPU memory via Bus
         if (rom.mirrored) {
-            uint16_t memory_address_cpu = 0x8000;
-            uint16_t memory_address_cpu_mirror = 0xC000;
-
-			// NROM-128
+            // NROM-128: 16KB mirrored at 0x8000–0xBFFF and 0xC000–0xFFFF
             for (int i = 0; i < 1024 * 16; i++) {
-                uint8_t prgByte = rom.prgRom[memory_address];
-                memory_address ++;
-                cpu.writerom(memory_address_cpu, prgByte);
-                cpu.writerom(memory_address_cpu_mirror, prgByte);
-                memory_address_cpu ++;
-                memory_address_cpu_mirror ++;
+                uint8_t byte = rom.prgRom[i];
+                bus.write(0x8000 + i, byte);  // Primary bank
+                bus.write(0xC000 + i, byte);  // Mirrored bank
             }
         } else {
-        	uint16_t memory_address_cpu = 0x8000;
-
-			// NROM-256
+            // NROM-256: 32KB mapped once from 0x8000–0xFFFF
             for (int i = 0; i < 1024 * 32; i++) {
-                uint8_t prgByte = rom.prgRom[memory_address];
-                memory_address ++;
-                cpu.writerom(memory_address_cpu, prgByte);
-                memory_address_cpu ++;
+                bus.write(0x8000 + i, rom.prgRom[i]);
             }
         }
     }
 }
 
 void NES::initNES() {
+    std::cout << "initNES() started\n";
     if (on == true) {
+        std::cout << "NES already on, returning early\n";
         return;
     }
+
+    std::cout << "Connecting CPU to Bus...\n";
+    bus.cpu = &cpu;
+    cpu.connectBus(&bus);
+
+    std::cout << "Calling cpu.reset()\n";
     cpu.reset();
-    //Uncomment for finite CPU testing with nestest.nes
-    //cpu.PC = 0xC000;
+
     on = true;
+    std::cout << "initNES() finished\n";
 }
 
 void NES::run() {
@@ -61,14 +53,14 @@ void NES::run() {
         //cpu.PC = 0xC000;
         int counter = 0;
         for (int i = 0;i < 10000; i++) {
-            uint8_t opcode = cpu.readMemory(cpu.PC);
+            uint8_t opcode = bus.read(cpu.PC);
             printf("Opcode: %02X\n", opcode);
             printf("counter %d \n", counter);
             cpu.printRegisters();
             cpu.execute();
 
 
-            uint8_t test_passed = cpu.readMemory(0x002);
+            uint8_t test_passed = bus.read(0x002);
             printf("test_passed 0x%02X\n\n", test_passed);
             counter++;
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -123,4 +115,3 @@ void NES::RandomizeFramebuffer() {
         framebuffer[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 }
-

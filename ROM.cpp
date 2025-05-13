@@ -65,7 +65,25 @@ bool NESROM::load(const std::string& filepath) {
 }
 
 uint8_t NESROM::readMemoryPRG(const uint16_t address) {
-    return prgRom[address];
+    if (ROMheader.prgRomSize == 0 || prgRom == nullptr)
+        return 0;
+
+    uint16_t mappedAddress = 0;
+
+    if (mirrored) {
+        // NROM-128 (16KB mirrored at both $8000–$BFFF and $C000–$FFFF)
+        mappedAddress = address & 0x3FFF;  // mask to 16KB range
+    } else {
+        // NROM-256 (32KB)
+        mappedAddress = address - 0x8000;
+    }
+
+    if (mappedAddress < (ROMheader.prgRomSize * 16 * 1024)) {
+        return prgRom[mappedAddress];
+    } else {
+        std::cerr << "Invalid PRG ROM read at address: 0x" << std::hex << address << std::dec << "\n";
+        return 0;
+    }
 }
 
 uint8_t NESROM::readMemoryCHR(uint16_t address) {

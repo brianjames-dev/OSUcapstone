@@ -8,7 +8,7 @@ APU::APU() {
 void APU::reset() {
 	registers.fill(0);  // Clear all registers
 	frame_counter = 0;
-	printf("APU reset.\n");
+//	printf("APU reset.\n");
 }
 
 void APU::write_register(uint16_t address, uint8_t value) {
