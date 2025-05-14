@@ -11,10 +11,8 @@ public:
     ~APU();
 
     void writeRegister(uint16_t address, uint8_t value);
+    uint8_t readRegister(uint16_t address);
     void generateSamples(float* stream, int length);
-    void clearAudioQueue();
-    Uint32 getQueuedAudioSize();
-    void queueAudio(const void* data, Uint32 len);
 
     void clock();       // Step APU internals (envelope, length counter)
     void reset();       // Reset APU state

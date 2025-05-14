@@ -1,8 +1,5 @@
 #include "tests.h"
-#include "string"
-
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
+#include <string>
 #include <iostream>
 
 int main(int argc, char* argv[]) {
@@ -23,10 +20,7 @@ int main(int argc, char* argv[]) {
     testPath = "./nestest.nes";
   }
 
-	SDL_Init(SDL_INIT_EVERYTHING);
-	std::cout << "SDL Initialized Successfully." << std::endl;
-
-	// // TESTS -- uncomment as needed
+	// TESTS -- uncomment as needed
 	Tests tests;
 	tests.test_cpu();
 	tests.test_opcodes();
@@ -51,7 +45,7 @@ int main(int argc, char* argv[]) {
 	tests.test_PPU_registers();
 	tests.test_pattern_tables(testPath);
 	tests.test_Pulse1();
-	SDL_Quit();
+
     return 0;
 }
 

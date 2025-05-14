@@ -46,7 +46,13 @@ APU::APU() {
     want.format = AUDIO_F32SYS;
     want.channels = 1;
     want.samples = 1024;
-    want.callback = nullptr;
+
+    want.callback = [](void* userdata, Uint8* stream, int len) {
+        APU* apu = static_cast<APU*>(userdata);
+        float* fstream = reinterpret_cast<float*>(stream);
+        int samples = len / sizeof(float);
+        apu->generateSamples(fstream, samples);
+    };
     want.userdata = this;
 
     audioDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &audioSpec, 0);
@@ -101,7 +107,24 @@ void APU::writeRegister(uint16_t address, uint8_t value) {
     }
 }
 
+uint8_t APU::readRegister(uint16_t address) {
+    switch (address) {
+    case 0x4015:
+        // Bit 0: Pulse 1 channel length counter > 0
+            return pulse1_enabled ? 0x01 : 0x00;
+
+    case 0x4017:
+        // Frame counter read (not really used in most games)
+            return 0x00; // or whatever placeholder value you want
+
+    default:
+        return 0x00;
+    }
+}
+
 void APU::generateSamples(float* stream, int length) {
+    // std::cout << "[APU] Generating audio samples...\n";
+
     if (!pulse1_enabled || pulse1_timer == 0) {
         for (int i = 0; i < length; i++) {
             stream[i] = 0.0f;
@@ -184,18 +207,5 @@ void APU::reset() {
 
     length_counter = 0;
     length_counter_halt = false;
-
-    clearAudioQueue();
 }
 
-void APU::clearAudioQueue() {
-    SDL_ClearQueuedAudio(audioDevice);
-}
-
-Uint32 APU::getQueuedAudioSize() {
-    return SDL_GetQueuedAudioSize(audioDevice);
-}
-
-void APU::queueAudio(const void* data, Uint32 len) {
-    SDL_QueueAudio(audioDevice, data, len);
-}
