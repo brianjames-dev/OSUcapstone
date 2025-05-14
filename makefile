@@ -4,9 +4,24 @@ CXX = g++
 # Compiler flags
 CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic
 
-# SDL2 flags
-SDL_CXXFLAGS = -I/mingw64/include/SDL2
-SDL_LDFLAGS = -L/mingw64/lib -lmingw32 -lSDL2 -mconsole
+# Check OS
+UNAME_S := $(shell uname -s)
+
+# Set SDL2 flags based on OS
+SDL_CXXFLAGS =
+SDL_LDFLAGS =
+
+ifeq ($(UNAME_S), Linux)
+	ECHO_MESSAGE = "Linux"
+	SDL_CXXFLAGS = $(shell sdl2-config --cflags)
+	SDL_LDFLAGS = $(shell sdl2-config --libs)
+endif
+
+ifeq ($(UNAME_S), Windows_NT)
+	ECHO_MESSAGE = "MinGW"
+	SDL_CXXFLAGS = -I/mingw64/include/SDL2
+	SDL_LDFLAGS = -L/mingw64/lib -lmingw32 -lSDL2 -mconsole
+endif
 
 # Target executable
 TARGET = emulator
@@ -34,3 +49,4 @@ clean:
 
 # Phony targets
 .PHONY: all clean
+
