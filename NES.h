@@ -7,13 +7,14 @@
 #include <ctime>
 
 #include "Bus.h"
+#include "CPU.h"
 #include "ROM.h"
-#include "CPU.cpp"
+
 class NES {
 public:
     // Public member variables
     Bus bus;
-    CPU& cpu = *bus.cpu;
+    CPU cpu;
     NESROM rom{};
     bool on = false;
     bool rom_loaded = false;

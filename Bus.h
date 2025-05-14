@@ -8,6 +8,7 @@
 #include "APU.h"
 
 class CPU;
+class APU;
 
 class Bus {
 public:
@@ -18,23 +19,40 @@ public:
     CPU* cpu;
     APU* apu;
     PPU  ppu;
-    std::array<uint8_t, 2 * 1024> cpuRam{};
+    std::array<uint8_t, 2 * 1024> cpuRam{}; // 2KB of CPU RAM
     NESROM* rom;
+
+
+    union controller {
+        struct {
+            uint8_t a: 1;
+            uint8_t b: 1;
+            uint8_t select: 1;
+            uint8_t start: 1;
+            uint8_t up: 1;
+            uint8_t down: 1;
+            uint8_t left: 1;
+            uint8_t right: 1;
+        }; uint8_t reg;
+    } controller1;
+    controller copyController;
+    int controller_read = 0;
 
     // Bus read and write functions
     void write(uint16_t address, uint8_t data);
     uint8_t read(uint16_t address);
 
-    // Reset function
-    void reset() const;
-    // Clock function
+    void reset();
     void clock();
+
     // Connect Game Rom to Bus
     void connectROM(NESROM& ROM);
 
     uint32_t clockCounter = 0;
     uint32_t cpuClockCounter = 0;
 
+    // Fallback RAM for testing without ROM
+    uint8_t testFallbackRAM[0x10000]{};
 private:
     // Device status
 

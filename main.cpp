@@ -7,7 +7,6 @@
 
 int main(int argc, char* argv[]) {
 
-
   std::string testPath;
 
   for (int i = 0; i < argc; i++) {
@@ -47,9 +46,10 @@ int main(int argc, char* argv[]) {
 	tests.test_CPX();
 	tests.test_CPY();
 	tests.test_CLD_SED_CLV();
-	// tests.test_NES(testPath);
+	tests.test_NES(testPath);
 	tests.test_Bus();
 	tests.test_PPU_registers();
+	tests.test_pattern_tables(testPath);
 	tests.test_Pulse1();
 	SDL_Quit();
     return 0;
