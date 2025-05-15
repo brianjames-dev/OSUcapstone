@@ -339,14 +339,11 @@ int main(int, char**)
                 ImGui::MenuItem("Show Debug Window", nullptr, &showDebug);
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Controls")) {
-                ImGui::MenuItem("Rebind Controls", nullptr, &showRebind);
-                ImGui::EndMenu();
-            }
+            ImGui::MenuItem("Controls", nullptr, &showRebind);
             ImGui::EndMainMenuBar();
 
             if (showRebind) {
-                ImGui::Begin("Rebind");
+                ImGui::Begin("Controls");
                 for (auto& keyBind : keyBindTable) {
                     if (ImGui::Button((std::string(keyBind.name) + ": " + SDL_GetScancodeName(*keyBind.key)).c_str())) {
                         nes.end();
