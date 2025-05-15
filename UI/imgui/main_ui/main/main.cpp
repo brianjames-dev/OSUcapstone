@@ -24,16 +24,14 @@
 
 // Keybinding function
 SDL_Scancode rebindKey() {
-  SDL_Event event;
-  printf("Bind...\n");
-  while (true) {
-    if (SDL_WaitEvent(&event)) {
-      if (event.type == SDL_KEYDOWN) {
-        printf("'%d' key is pressed\n", event.key.keysym.scancode);
-        return event.key.keysym.scancode;
-      }
+    SDL_Event event;
+    while (true) {
+        if (SDL_WaitEvent(&event)) {
+            if (event.type == SDL_KEYDOWN) {
+                return event.key.keysym.scancode;
+            }
+        }
     }
-  }
 }
 
 int main(int, char**)
@@ -49,6 +47,23 @@ int main(int, char**)
 
     // Initialize input
     Input input;
+    int skipInputFrames = 0;
+
+    // Keybinding map
+    struct KeyBind {
+      const char* name;
+      SDL_Scancode* key;
+    };
+
+    KeyBind keyBindTable[8];
+    keyBindTable[0] = {"Up", &input.up};
+    keyBindTable[1] = {"Down", &input.down};
+    keyBindTable[2] = {"Left", &input.left};
+    keyBindTable[3] = {"Right", &input.right};
+    keyBindTable[4] = {"A", &input.a};
+    keyBindTable[5] = {"B", &input.b};
+    keyBindTable[6] = {"Select", &input.select};
+    keyBindTable[7] = {"Start", &input.start};
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
@@ -220,64 +235,71 @@ int main(int, char**)
 
             //ImGui::SetWindowSize(ImVec2(renderWidth, renderHeight), 0);
 
-            const Uint8 *keyboard;
-
-            SDL_PumpEvents();
-            keyboard = SDL_GetKeyboardState(NULL);
-            // Handle the Start key
-            if (keyboard[input.start]) {
-                nes.bus.controller1.start = 1;
-            } else {
-                nes.bus.controller1.start = 0;
+            // Handle skipping input
+            if (skipInputFrames > 0) {
+              skipInputFrames--;
             }
 
-            // Handle the Up arrow key
-            if (keyboard[input.up]) {
-                nes.bus.controller1.up = 1;
-            } else {
-                nes.bus.controller1.up = 0;
-            }
+            if (skipInputFrames == 0) {
+                const Uint8 *keyboard;
 
-            // Handle the Down arrow key
-            if (keyboard[input.down]) {
-                nes.bus.controller1.down = 1;
-            } else {
-                nes.bus.controller1.down = 0;
-            }
+                SDL_PumpEvents();
+                keyboard = SDL_GetKeyboardState(NULL);
+                // Handle the Start key
+                if (keyboard[input.start]) {
+                    nes.bus.controller1.start = 1;
+                } else {
+                    nes.bus.controller1.start = 0;
+                }
 
-            // Handle the Left arrow key
-            if (keyboard[input.left]) {
-                nes.bus.controller1.left = 1;
-            } else {
-                nes.bus.controller1.left = 0;
-            }
+                // Handle the Up arrow key
+                if (keyboard[input.up]) {
+                    nes.bus.controller1.up = 1;
+                } else {
+                    nes.bus.controller1.up = 0;
+                }
 
-            // Handle the Right arrow key
-            if (keyboard[input.right]) {
-                nes.bus.controller1.right = 1;
-            } else {
-                nes.bus.controller1.right = 0;
-            }
+                // Handle the Down arrow key
+                if (keyboard[input.down]) {
+                    nes.bus.controller1.down = 1;
+                } else {
+                    nes.bus.controller1.down = 0;
+                }
 
-            // Handle the Select key
-            if (keyboard[input.select]) {
-                nes.bus.controller1.select = 1;
-            } else {
-                nes.bus.controller1.select = 0;
-            }
+                // Handle the Left arrow key
+                if (keyboard[input.left]) {
+                    nes.bus.controller1.left = 1;
+                } else {
+                    nes.bus.controller1.left = 0;
+                }
 
-            // Handle the A key
-            if (keyboard[input.a]) {
-                nes.bus.controller1.a = 1;
-            } else {
-                nes.bus.controller1.a = 0;
-            }
+                // Handle the Right arrow key
+                if (keyboard[input.right]) {
+                    nes.bus.controller1.right = 1;
+                } else {
+                    nes.bus.controller1.right = 0;
+                }
 
-            // Handle the B key
-            if (keyboard[input.b]) {
-                nes.bus.controller1.b = 1;
-            } else {
-                nes.bus.controller1.b = 0;
+                // Handle the Select key
+                if (keyboard[input.select]) {
+                    nes.bus.controller1.select = 1;
+                } else {
+                    nes.bus.controller1.select = 0;
+                }
+
+                // Handle the A key
+                if (keyboard[input.a]) {
+                    nes.bus.controller1.a = 1;
+                } else {
+                    nes.bus.controller1.a = 0;
+                }
+
+                // Handle the B key
+                if (keyboard[input.b]) {
+                    nes.bus.controller1.b = 1;
+                } else {
+                    nes.bus.controller1.b = 0;
+                }
             }
 
             GLuint textureID;
@@ -325,11 +347,17 @@ int main(int, char**)
 
             if (showRebind) {
                 ImGui::Begin("Rebind");
-                if (ImGui::Button((std::string("Up: ") + SDL_GetScancodeName(input.up)).c_str())) {
-                  nes.end();
-                  nes.paused = true;
+                for (auto& keyBind : keyBindTable) {
+                    if (ImGui::Button((std::string(keyBind.name) + ": " + SDL_GetScancodeName(*keyBind.key)).c_str())) {
+                        nes.end();
+                        nes.paused = true;
 
-                  input.up = rebindKey();
+                        *(keyBind.key) = rebindKey();
+
+                        nes.paused = false;
+                        nes.on = true;
+                        skipInputFrames = 5;
+                    }
                 }
 
                 ImGui::End();
