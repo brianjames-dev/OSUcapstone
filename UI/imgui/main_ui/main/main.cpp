@@ -343,9 +343,10 @@ int main(int, char**)
             ImGui::EndMainMenuBar();
 
             if (showRebind) {
-                ImGui::Begin("Controls");
+                ImGui::SetNextWindowSize(ImVec2(165, 215), ImGuiCond_Always);
+                ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoResize);
                 for (auto& keyBind : keyBindTable) {
-                    if (ImGui::Button((std::string(keyBind.name) + ": " + SDL_GetScancodeName(*keyBind.key)).c_str())) {
+                    if (ImGui::Button((std::string(keyBind.name) + ": " + SDL_GetScancodeName(*keyBind.key)).c_str(), ImVec2(150, 0))) {
                         nes.end();
                         nes.paused = true;
 
