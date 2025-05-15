@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include "../../../../NES.h"
+#include "main.h"
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL_opengles2.h>
 #else
@@ -30,6 +31,9 @@ int main(int, char**)
     float B = 1;
 
     bool showDebug = false;
+
+    // Initialize input
+    Input input;
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
@@ -205,57 +209,57 @@ int main(int, char**)
 
             SDL_PumpEvents();
             keyboard = SDL_GetKeyboardState(NULL);
-            // Handle the Return key
-            if (keyboard[SDL_SCANCODE_RETURN]) {
+            // Handle the Start key
+            if (keyboard[input.start]) {
                 nes.bus.controller1.start = 1;
             } else {
                 nes.bus.controller1.start = 0;
             }
 
             // Handle the Up arrow key
-            if (keyboard[SDL_SCANCODE_W]) {
+            if (keyboard[input.up]) {
                 nes.bus.controller1.up = 1;
             } else {
                 nes.bus.controller1.up = 0;
             }
 
             // Handle the Down arrow key
-            if (keyboard[SDL_SCANCODE_S]) {
+            if (keyboard[input.down]) {
                 nes.bus.controller1.down = 1;
             } else {
                 nes.bus.controller1.down = 0;
             }
 
             // Handle the Left arrow key
-            if (keyboard[SDL_SCANCODE_A]) {
+            if (keyboard[input.left]) {
                 nes.bus.controller1.left = 1;
             } else {
                 nes.bus.controller1.left = 0;
             }
 
             // Handle the Right arrow key
-            if (keyboard[SDL_SCANCODE_D]) {
+            if (keyboard[input.right]) {
                 nes.bus.controller1.right = 1;
             } else {
                 nes.bus.controller1.right = 0;
             }
 
-            // Handle the Control key
-            if (keyboard[SDL_SCANCODE_LCTRL]) {
+            // Handle the Select key
+            if (keyboard[input.select]) {
                 nes.bus.controller1.select = 1;
             } else {
                 nes.bus.controller1.select = 0;
             }
 
-            // Handle the X key
-            if (keyboard[SDL_SCANCODE_M]) {
+            // Handle the A key
+            if (keyboard[input.a]) {
                 nes.bus.controller1.a = 1;
             } else {
                 nes.bus.controller1.a = 0;
             }
 
-            // Handle the Z key
-            if (keyboard[SDL_SCANCODE_N]) {
+            // Handle the B key
+            if (keyboard[input.b]) {
                 nes.bus.controller1.b = 1;
             } else {
                 nes.bus.controller1.b = 0;
