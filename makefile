@@ -17,10 +17,10 @@ ifeq ($(UNAME_S), Linux)
 	SDL_LDFLAGS = $(shell sdl2-config --libs)
 endif
 
-ifeq ($(UNAME_S), Windows_NT)
+ifeq ($(OS), Windows_NT)
 	ECHO_MESSAGE = "MinGW"
 	SDL_CXXFLAGS = -I/mingw64/include/SDL2
-	SDL_LDFLAGS = -L/mingw64/lib -lmingw32 -lSDL2 -mconsole
+	SDL_LDFLAGS = -L/mingw64/lib -lmingw32 -lSDL2main -lSDL2 -mconsole
 endif
 
 # Target executable
