@@ -3,7 +3,6 @@
 
 #include <array>
 #include <cstdint>
-#include <chrono>
 #include "PPU.h"
 #include "ROM.h"
 #include "APU.h"
@@ -22,6 +21,7 @@ public:
     PPU  ppu;
     std::array<uint8_t, 2 * 1024> cpuRam{}; // 2KB of CPU RAM
     NESROM* rom;
+
 
     union controller {
         struct {

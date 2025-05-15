@@ -1,49 +1,56 @@
 #ifndef APU_H
 #define APU_H
 
-#include <array>
 #include <cstdint>
-
-// Sound channels
-struct PulseChannel {
-    bool enabled = false;
-    uint8_t duty = 0;
-    uint16_t timer = 0;
-    uint8_t length_counter = 0;
-    uint8_t envelope = 0;
-    uint8_t volume = 0;
-    bool constant_volume = false;
-
-    void update_timer();
-    void update_envelope();
-    void update_length_counter();
-};
-
-// TODO: Implement other sound channels here --> Triangle, Noise, DMC
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
 
 class APU {
 public:
-    APU();                                                 // Constructor
-    void reset();                                          // Resets all registers
-    void write_register(uint16_t address, uint8_t value);  // Write to APU registers
-    uint8_t read_register(uint16_t address);               // Read from APU registers
-    void clock();                                          // Syncs APU to frames
+    APU();
+    ~APU();
+
+    void writeRegister(uint16_t address, uint8_t value);
+    uint8_t readRegister(uint16_t address);
+    void generateSamples(float* stream, int length);
+
+    void clock();       // Step APU internals (envelope, length counter)
+    void reset();       // Reset APU state
 
 private:
-    std::array<uint8_t, 0x18> registers{};                 // APU memory-mapped registers
-    int frame_counter = 0;                                 // Used for sequencing APU operations
-    int frame_counter_mode = 4;                            // Default --> 4-step sequence
+    // Pulse 1 registers
+    uint8_t pulse1_duty;        // $4000: Duty and envelope/volume
+    uint8_t pulse1_sweep;       // $4001: Sweep (not implemented)
+    uint8_t pulse1_timer_low;   // $4002: Timer low byte
+    uint8_t pulse1_length;      // $4003: Length counter and timer high
 
-    // Sound channels
-    PulseChannel pulse1;
-    PulseChannel pulse2;
-    // TODO: More channels here --> Triangle, Noise, DMC
+    // Pulse 1 internal state
+    uint16_t pulse1_timer;      // 11-bit timer value
+    float pulse1_timer_counter; // Timing accumulator
+    uint8_t pulse1_duty_pos;    // Duty cycle position
+    uint8_t pulse1_volume;      // Current volume (from envelope or constant)
+    bool pulse1_enabled;        // Channel enabled flag
 
-    // Frame sequencer functions
-    void step_envelope();
-    void step_sweep();
-    void step_length_counter();
+    // Envelope state
+    bool envelope_loop;         // $4000 bit 5: Loop envelope / length counter halt
+    bool envelope_constant;     // $4000 bit 4: Constant volume flag
+    uint8_t envelope_period;    // $4000 bits 0-3: Envelope period or constant volume
+    uint8_t envelope_counter;   // Countdown for envelope decay
+    uint8_t envelope_volume;    // Current envelope volume (0-15)
+    bool envelope_start;        // Set when $4003 is written to restart envelope
+
+    // Length counter state
+    uint8_t length_counter;     // Counts down to silence channel
+    bool length_counter_halt;   // From $4000 bit 5 (same as envelope_loop)
+
+    SDL_AudioSpec audioSpec;
+    SDL_AudioDeviceID audioDevice;
+
+    static const uint8_t DUTY_WAVEFORMS[4][8];
+    static const uint8_t LENGTH_TABLE[32]; // Lookup table for length counter
 };
 
-#endif
 
+// TODO: Implement other sound channels here --> Triangle, Noise, DMC
+
+#endif

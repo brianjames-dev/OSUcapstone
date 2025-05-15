@@ -1,5 +1,6 @@
 #include "tests.h"
-#include "string"
+#include <string>
+#include <iostream>
 
 int main(int argc, char* argv[]) {
 
@@ -16,10 +17,10 @@ int main(int argc, char* argv[]) {
   }
 
   if (testPath.empty()) {
-    testPath = "./DK.nes";
+    testPath = "./nestest.nes";
   }
 
-	// // TESTS -- uncomment as needed
+	// TESTS -- uncomment as needed
 	Tests tests;
 	tests.test_cpu();
 	tests.test_opcodes();
@@ -43,6 +44,8 @@ int main(int argc, char* argv[]) {
 	tests.test_Bus();
 	tests.test_PPU_registers();
 	tests.test_pattern_tables(testPath);
+	tests.test_Pulse1();
+
     return 0;
 }
 

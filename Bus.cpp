@@ -29,7 +29,7 @@ void Bus::write(uint16_t address, uint8_t data) {
 
     // Handles APU registers --> 0x4000-0x4013, 0x4015, 0x4017
     if ((address >= 0x4000 && address <= 0x4013) || address == 0x4015 || address == 0x4017) {
-        apu->write_register(address, data);
+        apu->writeRegister(address, data);
         return;
     }
 
@@ -104,7 +104,7 @@ uint8_t Bus::read(uint16_t address) {
 
     // Handles APU registers --> 0x4000–0x4017
     if ((address >= 0x4000 && address <= 0x4013) || address == 0x4015 || address == 0x4017) {
-        return apu->read_register(address);
+        return apu->readRegister(address);
     }
 
     // Handles OAM DMA
@@ -149,8 +149,9 @@ void Bus::reset() {
 }
 
 void Bus::clock() {
-    // Cycle ppu every clock cycle
+    // Cycle ppu & apu every clock cycle
     ppu.clock();
+    apu->clock();
 
     // CPU is three times slower than ppu
     if (clockCounter % 3 == 0) {
