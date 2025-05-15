@@ -38,6 +38,21 @@ int main(int, char**)
         return -1;
     }
 
+    SDL_GameController* controller = nullptr;
+
+    // Open the first available game controller
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            controller = SDL_GameControllerOpen(i);
+            if (controller) {
+                printf("Opened game controller: %s\n", SDL_GameControllerName(controller));
+                break;
+            } else {
+                printf("Could not open game controller %d: %s\n", i, SDL_GetError());
+            }
+        }
+    }
+
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
@@ -88,7 +103,7 @@ int main(int, char**)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -195,65 +210,20 @@ int main(int, char**)
 
           //ImGui::SetWindowSize(ImVec2(renderWidth, renderHeight), 0);
 
-          const Uint8 *keyboard;
+            const Uint8 *keyboard;
+            SDL_PumpEvents();
+            keyboard = SDL_GetKeyboardState(NULL);
+            // Keep existing state from either input
+            nes.bus.controller1.start  = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_START) || keyboard[SDL_SCANCODE_RETURN];
+            nes.bus.controller1.select = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_BACK)  || keyboard[SDL_SCANCODE_LCTRL];
+            nes.bus.controller1.a      = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A)     || keyboard[SDL_SCANCODE_M];
+            nes.bus.controller1.b      = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B)     || keyboard[SDL_SCANCODE_N];
+            nes.bus.controller1.up     = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP)    || keyboard[SDL_SCANCODE_W];
+            nes.bus.controller1.down   = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN)  || keyboard[SDL_SCANCODE_S];
+            nes.bus.controller1.left   = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT)  || keyboard[SDL_SCANCODE_A];
+            nes.bus.controller1.right  = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) || keyboard[SDL_SCANCODE_D];
 
-          SDL_PumpEvents();
-          keyboard = SDL_GetKeyboardState(NULL);
-          // Handle the Return key
-          if (keyboard[SDL_SCANCODE_RETURN]) {
-              nes.bus.controller1.start = 1;
-          } else {
-              nes.bus.controller1.start = 0;
-          }
 
-          // Handle the Up arrow key
-          if (keyboard[SDL_SCANCODE_W]) {
-              nes.bus.controller1.up = 1;
-          } else {
-              nes.bus.controller1.up = 0;
-          }
-
-          // Handle the Down arrow key
-          if (keyboard[SDL_SCANCODE_S]) {
-              nes.bus.controller1.down = 1;
-          } else {
-              nes.bus.controller1.down = 0;
-          }
-
-          // Handle the Left arrow key
-          if (keyboard[SDL_SCANCODE_A]) {
-              nes.bus.controller1.left = 1;
-          } else {
-              nes.bus.controller1.left = 0;
-          }
-
-          // Handle the Right arrow key
-          if (keyboard[SDL_SCANCODE_D]) {
-              nes.bus.controller1.right = 1;
-          } else {
-              nes.bus.controller1.right = 0;
-          }
-
-          // Handle the Control key
-          if (keyboard[SDL_SCANCODE_LCTRL]) {
-              nes.bus.controller1.select = 1;
-          } else {
-              nes.bus.controller1.select = 0;
-          }
-
-          // Handle the X key
-          if (keyboard[SDL_SCANCODE_M]) {
-              nes.bus.controller1.a = 1;
-          } else {
-              nes.bus.controller1.a = 0;
-          }
-
-          // Handle the Z key
-          if (keyboard[SDL_SCANCODE_N]) {
-              nes.bus.controller1.b = 1;
-          } else {
-              nes.bus.controller1.b = 0;
-          }
 
           GLuint textureID;
 
