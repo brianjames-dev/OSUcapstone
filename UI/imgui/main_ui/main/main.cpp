@@ -22,6 +22,20 @@
 
 #include "portable-file-dialogs.h"
 
+// Keybinding function
+SDL_Scancode rebindKey() {
+  SDL_Event event;
+  printf("Bind...\n");
+  while (true) {
+    if (SDL_WaitEvent(&event)) {
+      if (event.type == SDL_KEYDOWN) {
+        printf("'%d' key is pressed\n", event.key.keysym.scancode);
+        return event.key.keysym.scancode;
+      }
+    }
+  }
+}
+
 int main(int, char**)
 {
     NES nes;
@@ -31,6 +45,7 @@ int main(int, char**)
     float B = 1;
 
     bool showDebug = false;
+    bool showRebind = false;
 
     // Initialize input
     Input input;
@@ -302,7 +317,24 @@ int main(int, char**)
                 ImGui::MenuItem("Show Debug Window", nullptr, &showDebug);
                 ImGui::EndMenu();
             }
+            if (ImGui::BeginMenu("Controls")) {
+                ImGui::MenuItem("Rebind Controls", nullptr, &showRebind);
+                ImGui::EndMenu();
+            }
             ImGui::EndMainMenuBar();
+
+            if (showRebind) {
+                ImGui::Begin("Rebind");
+                if (ImGui::Button((std::string("Up: ") + SDL_GetScancodeName(input.up)).c_str())) {
+                  nes.end();
+                  nes.paused = true;
+
+                  input.up = rebindKey();
+                }
+
+                ImGui::End();
+            }
+
 
             // Display the current registers, controller input, and additional controls
             if (showDebug) {
@@ -384,3 +416,5 @@ int main(int, char**)
 
     return 0;
 }
+
+

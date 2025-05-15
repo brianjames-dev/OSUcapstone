@@ -20,6 +20,4 @@ class main {
 
 };
 
-
-
 #endif //MAIN_H
