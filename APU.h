@@ -31,7 +31,7 @@ private:
     uint8_t pulse1_volume;      // Current volume (from envelope or constant)
     bool pulse1_enabled;        // Channel enabled flag
 
-    // Envelope state
+    // Pulse 1 Envelope state
     bool envelope_loop;         // $4000 bit 5: Loop envelope / length counter halt
     bool envelope_constant;     // $4000 bit 4: Constant volume flag
     uint8_t envelope_period;    // $4000 bits 0-3: Envelope period or constant volume
@@ -39,9 +39,86 @@ private:
     uint8_t envelope_volume;    // Current envelope volume (0-15)
     bool envelope_start;        // Set when $4003 is written to restart envelope
 
-    // Length counter state
+    // Pulse 1 Length counter state
     uint8_t length_counter;     // Counts down to silence channel
     bool length_counter_halt;   // From $4000 bit 5 (same as envelope_loop)
+
+    // Pulse 2 registers
+    uint8_t pulse2_duty;
+    uint8_t pulse2_sweep;
+    uint8_t pulse2_timer_low;
+    uint8_t pulse2_length;
+
+    // Pulse 2 internal state
+    uint16_t pulse2_timer;
+    float pulse2_timer_counter;
+    uint8_t pulse2_duty_pos;
+    uint8_t pulse2_volume;
+    bool pulse2_enabled;
+
+    // Pulse 2 Envelope state
+    bool envelope2_loop;
+    bool envelope2_constant;
+    uint8_t envelope2_period;
+    uint8_t envelope2_counter;
+    uint8_t envelope2_volume;
+    bool envelope2_start;
+
+    // Pulse 2 Length counter state
+    uint8_t length_counter2;
+    bool length_counter2_halt;
+
+    // Triangle channel registers
+    uint8_t triangle_linear_control; // $4008
+    uint8_t triangle_timer_low;      // $400A
+    uint8_t triangle_length_load;    // $400B
+
+    // Triangle internal state
+    uint16_t triangle_timer;         // 11-bit timer
+    float triangle_timer_counter;    // Accumulator
+    uint8_t triangle_wave_pos;       // Position in 32-step waveform
+    uint8_t triangle_linear_counter;
+    uint8_t triangle_linear_reload_value;
+    bool triangle_linear_reload;
+    uint8_t triangle_length_counter;
+    bool triangle_enabled;
+
+    // Noise channel registers
+    uint8_t noise_volume_register;   // $400C
+    uint8_t noise_mode_period;       // $400E
+    uint8_t noise_length_load;       // $400F
+
+    // Noise internal state
+    uint16_t noise_timer;
+    float noise_timer_counter;
+    uint16_t noise_lfsr;             // 15-bit LFSR
+    uint8_t noise_volume;
+    uint8_t noise_envelope_period;
+    uint8_t noise_envelope_counter;
+    uint8_t noise_envelope_volume;
+    bool noise_envelope_loop;
+    bool noise_envelope_constant;
+    bool noise_envelope_start;
+    uint8_t noise_length_counter;
+    bool noise_length_halt;
+    bool noise_enabled;
+
+    // DMC channel registers
+    uint8_t dmc_control;      // $4010: IRQ, loop, rate
+    uint8_t dmc_output_level; // $4011: DAC
+    uint8_t dmc_sample_address; // $4012
+    uint8_t dmc_sample_length;  // $4013
+
+    // DMC internal state
+    uint16_t dmc_current_address;
+    uint16_t dmc_bytes_remaining;
+    uint8_t dmc_shift_register;
+    uint8_t dmc_bits_remaining;
+    uint8_t dmc_sample_buffer;
+    bool dmc_sample_buffer_empty;
+    float dmc_timer_counter;
+    uint16_t dmc_timer_period;
+    bool dmc_enabled;
 
     SDL_AudioSpec audioSpec;
     SDL_AudioDeviceID audioDevice;
