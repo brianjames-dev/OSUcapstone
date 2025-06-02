@@ -7,6 +7,7 @@ Bus::Bus() {
     cpu = new CPU();
     apu = new APU();
     cpu->connectBus(this);  // Connect CPU to Bus
+    apu->connectBus(this);
 }
 
 Bus::~Bus() {
@@ -152,6 +153,10 @@ void Bus::clock() {
     // Cycle ppu & apu every clock cycle
     ppu.clock();
     apu->clock();
+
+    // if (apu->dmc_irq_flag && !cpu->getFlag(CPU::FLAGS::I)) {
+    //     cpu->irq_interrupt();
+    // }
 
     // CPU is three times slower than ppu
     if (clockCounter % 3 == 0) {

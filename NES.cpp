@@ -69,25 +69,24 @@ void NES::run() {
 }
 
 void NES::cycle() {
-    if(on == true) {
-        // Uncomment to test NES at full speed, might need to add more code if system is running too fast.
-          double fps = 1./60.;
-          auto start = std::chrono::high_resolution_clock::now();
-          int count = 0;
-          while (true) {
-              if (!(count % 2 == 0)) {
-                  bus.clock();
-              }
-              count++;
-              auto end = std::chrono::high_resolution_clock::now();
-              std::chrono::duration<double> elapsed_time = end - start;
-              std::chrono::duration<double> frame_time(fps);
-              if ((elapsed_time) > frame_time) {
-                  bus.cpuClockCounter = 0;
-                  break;
-              }
-          }
-        //bus.clock();
+    if (!on) return;
+
+    // Target PPU cycles per NES frame (341 × 262 = ~89342)
+    const int targetCycles = 89342;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < targetCycles; i++) {
+        bus.clock();  // This will automatically call PPU/APU/CPU as needed
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+
+    constexpr double ms_per_frame = 1000.0 / 60.0;  // ~16.67 ms per frame
+
+    if (elapsed.count() < ms_per_frame) {
+        SDL_Delay(static_cast<Uint32>(ms_per_frame - elapsed.count()));
     }
 }
 
