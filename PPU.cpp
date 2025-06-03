@@ -352,10 +352,6 @@ void PPU::displayNameTableOnScreen(uint8_t table) {
 
 void PPU::setPixel(uint8_t x, uint8_t y, uint32_t color) {
     rgbFramebuffer[y * 256 + x] = 0xFF000000 | color;
-    if (complete_frame == true) {
-        std::memcpy(nextFrame, rgbFramebuffer, sizeof(nextFrame));
-        complete_frame = false;
-    }
 }
 
 unsigned PPU::getColor(int index) {
@@ -772,6 +768,8 @@ void PPU::clock() {
             total_frames++;
             scanline = -1;
             complete_frame = true;
+
+            std::memcpy(nextFrame, rgbFramebuffer, sizeof(rgbFramebuffer));
         }
     }
 }

@@ -4,20 +4,33 @@
 #include <cstdint>
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+class Bus;
 
 class APU {
 public:
     APU();
     ~APU();
 
+    void connectBus(Bus* b) { this->bus = b; }
+
     void writeRegister(uint16_t address, uint8_t value);
     uint8_t readRegister(uint16_t address);
     void generateSamples(float* stream, int length);
+
+    void clockEnvelopeAndLength();
+    void clockSweepUnits();
+    bool dmc_irq_flag = false;
+    bool frame_irq_flag = false;
 
     void clock();       // Step APU internals (envelope, length counter)
     void reset();       // Reset APU state
 
 private:
+    Bus* bus = nullptr;
+
+    int frame_step = 0;
+    int frame_sequencer_counter = 0;
+
     // Pulse 1 registers
     uint8_t pulse1_duty;        // $4000: Duty and envelope/volume
     uint8_t pulse1_sweep;       // $4001: Sweep (not implemented)
@@ -43,6 +56,14 @@ private:
     uint8_t length_counter;     // Counts down to silence channel
     bool length_counter_halt;   // From $4000 bit 5 (same as envelope_loop)
 
+    // Pulse 1 sweep unit state
+    bool sweep_enabled1;
+    uint8_t sweep_period1;
+    uint8_t sweep_shift1;
+    bool sweep_negate1;
+    uint8_t sweep_counter1;
+    bool sweep_reload1;
+
     // Pulse 2 registers
     uint8_t pulse2_duty;
     uint8_t pulse2_sweep;
@@ -67,6 +88,14 @@ private:
     // Pulse 2 Length counter state
     uint8_t length_counter2;
     bool length_counter2_halt;
+
+    // Pulse 2 sweep unit state
+    bool sweep_enabled2;
+    uint8_t sweep_period2;
+    uint8_t sweep_shift2;
+    bool sweep_negate2;
+    uint8_t sweep_counter2;
+    bool sweep_reload2;
 
     // Triangle channel registers
     uint8_t triangle_linear_control; // $4008
